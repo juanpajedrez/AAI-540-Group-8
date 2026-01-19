@@ -2,8 +2,8 @@
 <img align="center" width="30%" alt="image" src="https://www.sandiego.edu/assets/global/images/logos/logo-usd.png">
 </div>
 
-# AAI-540-Group-8
-Regression Models for Oil and Gold Futures
+# Regression Models for Oil and Gold Futures
+## AAI-540-Group-8
 
 ![](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 ![](https://img.shields.io/badge/MSAAI-MLOps-blue?style=for-the-badge)
