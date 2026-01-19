@@ -1,2 +1,44 @@
+<div align="center">
+<img align="center" width="30%" alt="image" src="https://www.sandiego.edu/assets/global/images/logos/logo-usd.png">
+</div>
+
 # AAI-540-Group-8
 Regression Models for Oil and Gold Futures
+
+![](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+![](https://img.shields.io/badge/MSAAI-MLOps-blue?style=for-the-badge)
+
+## Table of Contents
+- [Description](#Overview)
+- [License](#license)
+
+# Overview
+## About the Project
+
+The goals of this project are as follows:
+- Create reliable regression models that can accurately, with certain windows, MSE, RMSE, and MAE values of less than < 2 (this can change) to ensure proper predictions
+- These models will work on datasets that are discrete, AKA, data that was taken from a screenshot of time.
+- Compare Baseline models against a deep learning model (i.e: Preferably an attention model, but if we encounter difficulty, we will opt for an RNN family model).
+
+Non Goals:
+- We will not be predicting future prices of oil and gold on streaming data environments; this is in a static, continuous environment.
+- The Dataset was purposely chosen to align with two assets correlated with today’s economic assets; we will not explore any other tickers.
+- Depending on how it goes, we will explore for sure linear regression, multi-linear regression, and a deep learning model, but 3 models is the objective. Not 9 or 10.
+
+## Contributors
+<table>
+  <tr>
+    <td>
+      <a href="https://github.com/juanpajedrez">
+        <img src="https://github.com/juanpajedrez.png" width="100" height="100" alt="Juan P. Triana"/><br />
+        <sub><b>AJuan P. Triana</b></sub>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/carlosOrtizM">
+        <img src="https://github.com/carlosOrtizM.png" width="100" height="100" alt="Carlos Ortiz "/><br />
+        <sub><b>Carlos Ortiz</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
