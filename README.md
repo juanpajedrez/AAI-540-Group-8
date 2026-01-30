@@ -25,6 +25,8 @@ Non Goals:
 - The Dataset was purposely chosen to align with two assets correlated with today’s economic assets; we will not explore any other tickers.
 - Depending on how it goes, we will explore for sure linear regression, multi-linear regression, and a deep learning model, but 3 models is the objective. Not 9 or 10.
 
+:)
+
 ## Contributors
 <table>
   <tr>
