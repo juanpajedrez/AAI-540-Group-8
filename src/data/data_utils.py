@@ -5,6 +5,12 @@ import yfinance as yf
 
 from typing import List, Union, Dict
 
+import logging
+logger = logging.getLogger('aws')
+
+from src.misc.logger_utils import log_function_call
+
+@log_function_call
 def assert_yyyy_mm_dd(ticker_date:str) -> Union[None, ValueError]:
     '''
     ChatGPT generated: Function that will check wether a ticker_date is
@@ -16,9 +22,10 @@ def assert_yyyy_mm_dd(ticker_date:str) -> Union[None, ValueError]:
     try:
         datetime.strptime(ticker_date, "%Y-%m-%d")
     except ValueError as e:
-        print(e)
+        logger.error(e)
         raise AssertionError(f"Invalid date format, expected YYYY-MM-DD: {ticker_date}")
 
+@log_function_call
 def get_stocks_data_yahoo(
     tickers: List[str],
     start_date: str,
