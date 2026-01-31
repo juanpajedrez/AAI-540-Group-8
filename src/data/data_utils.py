@@ -87,3 +87,11 @@ def get_stocks_data_yahoo(
         df_to_pass['Ticker'] = df_to_pass['Ticker'].astype(str).astype("string")
         df_tickers_splitted.append(df_to_pass)
     return df_tickers_splitted
+
+
+@log_function_call
+def get_stocks_data_local(tickers: List[str]):
+
+    df_tickers = []
+    [df_tickers.append(pd.read_csv(f"{ticker}.csv", index_col=0)) for ticker in tickers]
+    return df_tickers
