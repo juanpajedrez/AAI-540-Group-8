@@ -93,5 +93,5 @@ def get_stocks_data_yahoo(
 def get_stocks_data_local(tickers: List[str]):
 
     df_tickers = []
-    [df_tickers.append(pd.read_csv(f"{ticker}.csv", index_col=0)) for ticker in tickers]
+    [df_tickers.append(pd.read_csv(f"files/{ticker}.csv", index_col=0)) for ticker in tickers]
     return df_tickers
