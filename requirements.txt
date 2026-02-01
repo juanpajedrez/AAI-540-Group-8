@@ -5,3 +5,4 @@ ydata-profiling
 setuptools
 TA-Lib
 scikit-learn
+zipline-reloaded

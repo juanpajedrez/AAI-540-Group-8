@@ -6,6 +6,9 @@ import yfinance as yf
 from typing import List, Union, Dict
 
 import logging
+
+from pandas import DataFrame
+
 logger = logging.getLogger('aws')
 
 from src.misc.logger_utils import log_function_call
@@ -53,7 +56,7 @@ def get_stocks_data_yahoo(
         assert_yyyy_mm_dd(end_date)
 
         # Returns a pd.Series containing a multi->index label of the tickers
-        data = yf.download(tickers=tickers, start=start_date, end=end_date)
+        data = yf.download(tickers=tickers, start=start_date, end=end_date, auto_adjust=False)
 
         # Let's create a holder to df_tickers_splitted
         df_tickers_splitted = []
@@ -64,8 +67,8 @@ def get_stocks_data_yahoo(
             ticker_data = {}
 
             #Add the datetime index orginally
-            ticker_data["Date"] = data.index
-            total_rows = len(ticker_data["Date"])
+            ticker_data["date"] = data.index
+            total_rows = len(ticker_data["date"])
 
             # Iterate across each of the columns
             for col in data.columns:
@@ -94,10 +97,29 @@ def get_stocks_data_yahoo(
 
 
 @log_function_call
+def get_zipline_stocks(tickers: List[str],
+    start_date: str,
+    end_date: str) -> list[DataFrame] | None:
+    try:
+        dfs = []
+        for ticker in tickers:
+            df = yf.download(tickers=ticker, start=start_date, end=end_date, auto_adjust=False,
+                             multi_level_index=False)
+            df.columns = [x.lower() for x in df.columns]
+            df["date"] = df.index
+
+            dfs.append(df)
+        return dfs
+
+    except Exception as e:
+        logger.error(e)
+
+
+@log_function_call
 def get_stocks_data_local(tickers: List[str]):
     try:
         df_tickers = []
-        [df_tickers.append(pd.read_csv(f"files/{ticker}.csv", index_col=0)) for ticker in tickers]
+        [df_tickers.append(pd.read_csv(f"files/backtest/Daily/{ticker}.csv")) for ticker in tickers]
         return df_tickers
     except Exception as e:
         logger.error(e)
