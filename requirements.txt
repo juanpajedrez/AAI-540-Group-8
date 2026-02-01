@@ -3,3 +3,5 @@ python-dotenv
 yfinance
 ydata-profiling
 setuptools
+TA-Lib
+scikit-learn

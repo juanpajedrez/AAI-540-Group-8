@@ -43,55 +43,61 @@ def get_stocks_data_yahoo(
         DataFrame:
 
     '''
+    try:
 
-    # Assert the input type is gonna be list
-    assert isinstance(tickers, list), f"Please use a list of proper tickers, current type is: {type(tickers)}"
+        # Assert the input type is gonna be list
+        assert isinstance(tickers, list), f"Please use a list of proper tickers, current type is: {type(tickers)}"
 
-    # Make sure is the correct datetime format.
-    assert_yyyy_mm_dd(start_date)
-    assert_yyyy_mm_dd(end_date)
+        # Make sure is the correct datetime format.
+        assert_yyyy_mm_dd(start_date)
+        assert_yyyy_mm_dd(end_date)
 
-    # Returns a pd.Series containing a multi->index label of the tickers
-    data = yf.download(tickers=tickers, start=start_date, end=end_date)
+        # Returns a pd.Series containing a multi->index label of the tickers
+        data = yf.download(tickers=tickers, start=start_date, end=end_date)
 
-    # Let's create a holder to df_tickers_splitted
-    df_tickers_splitted = []
+        # Let's create a holder to df_tickers_splitted
+        df_tickers_splitted = []
 
-    for ticker in tickers:
+        for ticker in tickers:
 
-        # Create a list to hold the ticker data
-        ticker_data = {}
-        
-        #Add the datetime index orginally
-        ticker_data["Date"] = data.index
-        total_rows = len(ticker_data["Date"])
+            # Create a list to hold the ticker data
+            ticker_data = {}
 
-        # Iterate across each of the columns
-        for col in data.columns:
-            # If string ticker in the column, use it
-            if ticker in col:
-                # Let's get the col_name and ticker_name
-                col_name, ticker_name = col[0], col[1]
+            #Add the datetime index orginally
+            ticker_data["Date"] = data.index
+            total_rows = len(ticker_data["Date"])
 
-                # Assign the proper ticker_data to col_name
-                ticker_data[col_name] = data[col].to_list()
-        
-        # At the very end of the loop, add a new name called 'Ticker'
-        ticker_data["Ticker"] = [ticker_name]*total_rows
+            # Iterate across each of the columns
+            for col in data.columns:
+                # If string ticker in the column, use it
+                if ticker in col:
+                    # Let's get the col_name and ticker_name
+                    col_name, ticker_name = col[0], col[1]
 
-        # Get the dataframe and set the index to be the datetime
-        df_to_pass = pd.DataFrame(ticker_data)
-        df_to_pass.set_index("Date")
+                    # Assign the proper ticker_data to col_name
+                    ticker_data[col_name] = data[col].to_list()
 
-        # Cast the 'Ticker' column to string and append to resulting list
-        df_to_pass['Ticker'] = df_to_pass['Ticker'].astype(str).astype("string")
-        df_tickers_splitted.append(df_to_pass)
-    return df_tickers_splitted
+            # At the very end of the loop, add a new name called 'Ticker'
+            ticker_data["Ticker"] = [ticker_name]*total_rows
+
+            # Get the dataframe and set the index to be the datetime
+            df_to_pass = pd.DataFrame(ticker_data)
+            df_to_pass.set_index("Date")
+
+            # Cast the 'Ticker' column to string and append to resulting list
+            df_to_pass['Ticker'] = df_to_pass['Ticker'].astype(str).astype("string")
+            df_tickers_splitted.append(df_to_pass)
+        return df_tickers_splitted
+
+    except Exception as e:
+        logger.error(e)
 
 
 @log_function_call
 def get_stocks_data_local(tickers: List[str]):
-
-    df_tickers = []
-    [df_tickers.append(pd.read_csv(f"files/{ticker}.csv", index_col=0)) for ticker in tickers]
-    return df_tickers
+    try:
+        df_tickers = []
+        [df_tickers.append(pd.read_csv(f"files/{ticker}.csv", index_col=0)) for ticker in tickers]
+        return df_tickers
+    except Exception as e:
+        logger.error(e)
