@@ -6,6 +6,9 @@ logger = logging.getLogger('aws')
 
 from sklearn.model_selection import train_test_split
 
+from src.misc.logger_utils import log_function_call
+
+@log_function_call
 def split_to_dataset(list_df: list[tuple[str, DataFrame]], ticker:str):
     try:
         for name, df in list_df:
@@ -13,6 +16,7 @@ def split_to_dataset(list_df: list[tuple[str, DataFrame]], ticker:str):
     except Exception as e:
         logger.error(e)
 
+@log_function_call
 def dataset_operations(df: DataFrame, ticker: str, y_label_name: str):
     try:
         labels = df[y_label_name]
