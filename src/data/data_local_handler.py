@@ -34,19 +34,22 @@ def data_handler_main(full_exec=False):
             if full_exec:
                 df.to_csv(f'files/{ft}.csv')
 
+            ## EDA - No Feature
+            ticker_eda_profile(df, f"{ft}_B", full_exec)
+
             # Add Technical Analysis Features
             df = feature_talib_engineering(df)
 
-            ## EDA
-            ticker_eda_profile(df, ft, full_exec)
+            # Non-OHLCV Columns, keeping just the Close column
+            columns = ["Open", "Low", "High", "Volume"]
+            df_features = df.copy()
+            df_features = df_features.drop(columns=columns)
+
+            ## Preliminary EDA - Features
+            ticker_eda_profile(df_features, f"{ft}_F", full_exec)
 
             if full_exec:
                 dataset_operations(df, ft, "Close")
-
-        ## missing (doing this on JAN 31ST):
-
-        ## Train test validation split
-        # Reserve data pool
 
         ## same stuff but in aws:
         ## raw data set store in an S3 Datalake.

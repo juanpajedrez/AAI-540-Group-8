@@ -11,7 +11,7 @@ def ticker_eda_profile(data_frame, ticker_symbol, visualization=True):
         if visualization:
             # https://docs.profiling.ydata.ai/latest/features/time_series_datasets/
             profile = ProfileReport(data_frame, tsmode=True, sortby="Date", title=f'{ticker_symbol} Report')
-            profile.to_file(f"files/{ticker_symbol}_A.html")
+            profile.to_file(f"files/{ticker_symbol}.html")
 
         else:
             print(f"\t\t\t<-------{ticker_symbol}------->\n")
