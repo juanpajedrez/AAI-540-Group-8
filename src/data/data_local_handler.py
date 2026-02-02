@@ -25,7 +25,7 @@ def data_handler_main(full_exec=False):
         if full_exec:
             # West Texas Intermediate Barrel
             list_dfs = get_zipline_stocks(
-                tickers=future_tickers, start_date="2010-01-04", end_date="2026-01-31", #date.today()
+                tickers=future_tickers, start_date="2010-01-04", end_date="2026-01-15", #date.today()
             ) #2000-01-01 as far as we could go
         else:
             list_dfs = get_stocks_data_local(future_tickers)
@@ -35,11 +35,8 @@ def data_handler_main(full_exec=False):
 
             df = prod_dev_split(df, ft, full_exec)
 
-            if full_exec:
-                df = df.sort_index()
-                df.to_csv(f'files/backtest/Daily/{ft}.csv')
-
             # RUNNING EDAs AND FEATURE ENG. ONLY ON THE DEV DATA (60%)
+            df.sort_index()
 
             ## EDA - No Feature
             ticker_eda_profile(df, f"{ft}_B", full_exec)

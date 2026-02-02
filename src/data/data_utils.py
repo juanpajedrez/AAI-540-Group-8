@@ -1,4 +1,5 @@
 # Import necessary modules
+import numpy as np
 import pandas as pd
 from datetime import datetime
 import yfinance as yf
@@ -97,17 +98,27 @@ def get_stocks_data_yahoo(
 
 
 @log_function_call
+def backtest_dataset_creation(df: DataFrame, ticker: str):
+    try:
+        df.ffill()
+        df[df.select_dtypes(np.float64).columns] = df.select_dtypes(np.float64).round().astype(int)
+        df.to_csv(f'files/backtest/Daily/{ticker}.csv')  # backtest needs this specific format
+    except Exception as e:
+        logger.error(e)
+
+
+@log_function_call
 def get_zipline_stocks(tickers: List[str],
     start_date: str,
     end_date: str) -> list[DataFrame] | None:
     try:
         dfs = []
         for ticker in tickers:
-            df = yf.download(tickers=ticker, start=start_date, end=end_date, auto_adjust=False,
+            df = yf.download(tickers=ticker, start=start_date, end=end_date, auto_adjust=False, repair=True
                              ) #multi_level_index=False
             df.columns = [x.lower() for x, _ in df.columns]
+            backtest_dataset_creation(df, ticker)
             df.reset_index(inplace=True)
-
             dfs.append(df)
         return dfs
 
