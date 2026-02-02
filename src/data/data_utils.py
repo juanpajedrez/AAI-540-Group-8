@@ -104,9 +104,9 @@ def get_zipline_stocks(tickers: List[str],
         dfs = []
         for ticker in tickers:
             df = yf.download(tickers=ticker, start=start_date, end=end_date, auto_adjust=False,
-                             multi_level_index=False)
-            df.columns = [x.lower() for x in df.columns]
-            df["date"] = df.index
+                             ) #multi_level_index=False
+            df.columns = [x.lower() for x, _ in df.columns]
+            df.reset_index(inplace=True)
 
             dfs.append(df)
         return dfs

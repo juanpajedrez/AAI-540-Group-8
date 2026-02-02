@@ -9,6 +9,7 @@ import talib
 @log_function_call
 def feature_talib_engineering(df):
     try:
+        df = df.sort_index() # making sure it is sorted
         # Overlap Studies
         df['MA'] = talib.MA(df['close'], timeperiod=10) #windowed TAs produce lots of null values in demo...
         df['EMA'] = talib.EMA(df['close'], timeperiod=10)

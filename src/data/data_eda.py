@@ -9,8 +9,8 @@ from src.misc.logger_utils import log_function_call
 def ticker_eda_profile(data_frame, ticker_symbol, visualization=True):
     try:
         if visualization:
-            # https://docs.profiling.ydata.ai/latest/features/time_series_datasets/
-            profile = ProfileReport(data_frame, tsmode=True, sortby="date", title=f'{ticker_symbol} Report')
+            #https://docs.profiling.ydata.ai/latest/features/time_series_datasets/
+            profile = ProfileReport(data_frame, tsmode=True, sortby="Date", title=f'{ticker_symbol} Report')
             profile.to_file(f"files/{ticker_symbol}.html")
 
         else:

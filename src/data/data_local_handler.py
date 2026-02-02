@@ -36,23 +36,24 @@ def data_handler_main(full_exec=False):
             df = prod_dev_split(df, ft, full_exec)
 
             if full_exec:
+                df = df.sort_index()
                 df.to_csv(f'files/backtest/Daily/{ft}.csv')
 
             # RUNNING EDAs AND FEATURE ENG. ONLY ON THE DEV DATA (60%)
 
             ## EDA - No Feature
-            ticker_eda_profile(df, f"{ft}_B", True)
+            ticker_eda_profile(df, f"{ft}_B", full_exec)
 
             # Add Technical Analysis Features
             df = feature_talib_engineering(df)
 
             # Non-OHLCV Columns, keeping just the Close column
-            columns = ["open", "low", "high", "volume"]
+            columns = ["open", "low", "high", "volume", "adj close"]
             df_features = df.copy()
             df_features = df_features.drop(columns=columns)
 
             ## Preliminary EDA - Features
-            ticker_eda_profile(df_features, f"{ft}_F", True)
+            ticker_eda_profile(df_features, f"{ft}_F", full_exec)
 
             if full_exec:
                 dataset_operations(df, ft, "close")

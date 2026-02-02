@@ -12,6 +12,7 @@ from src.misc.logger_utils import log_function_call
 def split_to_dataset(list_df: list[tuple[str, DataFrame]], ticker:str):
     try:
         for name, df in list_df:
+            df = df.sort_index()
             df.to_csv(f'files/dataset/{ticker}{name}.csv')
     except Exception as e:
         logger.error(e)
@@ -19,7 +20,7 @@ def split_to_dataset(list_df: list[tuple[str, DataFrame]], ticker:str):
 @log_function_call
 def prod_dev_split(df: DataFrame, ticker: str, full_run: bool):
     try:
-        x_dev, x_prod = train_test_split(df, test_size=0.4, random_state=12)
+        x_dev, x_prod = train_test_split(df, test_size=0.4, shuffle=False)
         dataset = [('x_prod', x_prod)]
         if full_run:
             split_to_dataset(dataset, f"prod/{ticker}")
@@ -34,8 +35,8 @@ def dataset_operations(df: DataFrame, ticker: str, y_label_name: str):
         labels = df[y_label_name]
         features = df.drop(columns=[y_label_name], axis=1)
 
-        x_dev, x_test, y_dev, y_test = train_test_split(labels, features, test_size=0.33, random_state=12)
-        x_test, x_val, y_test, y_val = train_test_split(x_test, y_test, test_size=0.5, random_state=12)
+        x_dev, x_test, y_dev, y_test = train_test_split(labels, features, test_size=0.33, shuffle=False)
+        x_test, x_val, y_test, y_val = train_test_split(x_test, y_test, test_size=0.5, shuffle=False)
 
         dataset = [('x_dev', x_dev), ('y_dev', y_dev),
                    ('x_test', x_test), ('y_test', y_test), ('x_val', x_val), ('y_val', y_val)]
