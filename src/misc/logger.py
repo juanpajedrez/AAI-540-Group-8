@@ -1,8 +1,12 @@
-
+from pathlib import Path
 import logging
 
 # https://coderivers.org/blog/configure-logger-python/
 def set_logger(name:str):
+
+    # Let's make sure logs folder exist, else create the folder
+    logger_path = Path.cwd() / "logs"
+    logger_path.mkdir(parents = True, exist_ok=True)
 
     # Create a custom logger
     logger = logging.getLogger(name)

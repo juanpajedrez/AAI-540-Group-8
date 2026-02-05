@@ -16,3 +16,5 @@ tqdm
 # Importing latest aws modules for sagemaker
 sagemaker
 boto3
+
+# Importing modules for config

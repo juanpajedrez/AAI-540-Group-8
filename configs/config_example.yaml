@@ -1,0 +1,5 @@
+# Example for config.yaml
+data_handler:
+    full_exec: true
+    start_date: "2010-01-04"
+    end_date: "2026-02-05"

@@ -7,7 +7,7 @@ import yfinance as yf
 from typing import List, Union, Dict
 
 import logging
-
+from pathlib import Path
 from pandas import DataFrame
 
 logger = logging.getLogger('aws')
@@ -98,11 +98,28 @@ def get_stocks_data_yahoo(
 
 
 @log_function_call
+def setup_local_files_dirs():
+    try:
+        local_files_path = Path().cwd() / 'files'
+        local_files_path.mkdir(parents = True, exist_ok = True)
+        local_backtest_path = local_files_path / 'backtest'
+        local_backtest_path.mkdir(parents = True, exist_ok = True)
+        local_dataset_path = local_files_path / 'dataset'
+        local_dataset_path.mkdir(parents = True, exist_ok = True)
+    except Exception as e:
+        logger.error(e)
+
+
+@log_function_call
 def backtest_dataset_creation(df: DataFrame, ticker: str):
     try:
-        df.ffill()
-        df[df.select_dtypes(np.float64).columns] = df.select_dtypes(np.float64).round().astype(int)
-        df.to_csv(f'files/backtest/Daily/{ticker}.csv')  # backtest needs this specific format
+        backtest_path = Path().cwd() / 'files' / 'backtest' / 'Daily'
+        backtest_path.mkdir(parents = True, exist_ok = True)
+        ticker_path = backtest_path / f"{ticker}.csv"
+        if not ticker_path:
+            df.ffill()
+            df[df.select_dtypes(np.float64).columns] = df.select_dtypes(np.float64).round().astype(int)
+            df.to_csv(f'files/backtest/Daily/{ticker}.csv')  # backtest needs this specific format
     except Exception as e:
         logger.error(e)
 

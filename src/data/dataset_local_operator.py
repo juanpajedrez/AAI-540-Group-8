@@ -1,5 +1,5 @@
 import logging
-
+from pathlib import Path
 from pandas import DataFrame
 
 logger = logging.getLogger('aws')
@@ -9,11 +9,17 @@ from sklearn.model_selection import train_test_split
 from src.misc.logger_utils import log_function_call
 
 @log_function_call
-def split_to_dataset(list_df: list[tuple[str, DataFrame]], ticker:str):
+def split_to_dataset(list_df:
+    list[tuple[str, DataFrame]],
+    ticker:str, passed_path:Path):
     try:
         for name, df in list_df:
-            df = df.sort_index()
-            df.to_csv(f'files/dataset/{ticker}{name}.csv')
+            local_file_path = passed_path / f"{ticker}{name}.csv"
+            if not local_file_path.exists():
+                df = df.sort_index()
+                df.to_csv(local_file_path)
+            else:
+                continue
     except Exception as e:
         logger.error(e)
 
@@ -23,7 +29,9 @@ def prod_dev_split(df: DataFrame, ticker: str, full_run: bool):
         x_dev, x_prod = train_test_split(df, test_size=0.4, shuffle=False)
         dataset = [('x_prod', x_prod)]
         if full_run:
-            split_to_dataset(dataset, f"prod/{ticker}")
+            local_prod_dataset_path = Path().cwd() / "files" / "dataset" / "prod"
+            local_prod_dataset_path.mkdir(parents = True, exist_ok = True)
+            split_to_dataset(dataset, ticker, local_prod_dataset_path)
         return x_dev
     except Exception as e:
         logger.error(e)
@@ -41,7 +49,8 @@ def dataset_operations(df: DataFrame, ticker: str, y_label_name: str):
         dataset = [('x_dev', x_dev), ('y_dev', y_dev),
                    ('x_test', x_test), ('y_test', y_test), ('x_val', x_val), ('y_val', y_val)]
 
-        split_to_dataset(dataset, ticker)
+        local_dataset_path = Path().cwd() / "files" / "dataset"
+        split_to_dataset(dataset, ticker, local_dataset_path)
 
     except Exception as e:
         logger.error(e)
