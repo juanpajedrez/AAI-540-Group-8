@@ -1,8 +1,12 @@
+import os
 from src.misc.logger import set_logger
+
+print(os.getcwd())
+
 logger = set_logger('aws')
+breakpoint()
 
 import yfinance as yf
-
 from src.data.data_local_handler import data_handler_main
 
 def main ():
