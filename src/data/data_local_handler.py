@@ -102,24 +102,33 @@ def data_handler_main(prefix:str,
         
         # 1.3 Uploading backtesting datasets to S3
         if upload_backtest:
-            # Get all files ending in .csv inside Daily
-            for csv_file in backtest_daily_path.glob("*.csv"):
-                sess.upload_data(str(csv_file), bucket=bucket,
-                                 key_prefix=f"{prefix}/backtest/Daily")
+            try:
+                # Get all files ending in .csv inside Daily
+                for csv_file in backtest_daily_path.glob("*.csv"):
+                    sess.upload_data(str(csv_file), bucket=bucket,
+                                     key_prefix=f"{prefix}/backtest/Daily")
+            except Exception as e:
+                logger.error(e)
 
         # 1.4 Uploading feature engineer dataset from feature talib_engineering
         if upload_dataset:
-            # Get all files ending in .csv inside dataset
-            for csv_file in dataset_path.glob("*.csv"):
-                sess.upload_data(str(csv_file), bucket=bucket,
-                 key_prefix=f"{prefix}/dataset")
+            try:
+                # Get all files ending in .csv inside dataset
+                for csv_file in dataset_path.glob("*.csv"):
+                    sess.upload_data(str(csv_file), bucket=bucket,
+                     key_prefix=f"{prefix}/dataset")
+            except Exception as e:
+                logger.error(e)
 
         # 1.5 Uploading production datasets from feature talib_engineering
         if upload_production:
-            # Get all files ending in .csv inside production
-            for csv_file in prod_path.glob("*.csv"):
-                sess.upload_data(str(csv_file), bucket = bucket,
-                                key_prefix=f"{prefix}/dataset/prod")
+            try:
+                # Get all files ending in .csv inside production
+                for csv_file in prod_path.glob("*.csv"):
+                    sess.upload_data(str(csv_file), bucket = bucket,
+                                    key_prefix=f"{prefix}/dataset/prod")
+            except Exception as e:
+                logger.error(e)
         
         ## Set up Athena tables to enable cataloging and querying of your data.
         ## Perform exploratory data analysis on your data in a Sagemaker notebook.
