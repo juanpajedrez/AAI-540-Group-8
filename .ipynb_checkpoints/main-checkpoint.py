@@ -19,7 +19,10 @@ def main ():
         config = yaml.safe_load(f)
 
     # this will act as a glorified cli function caller (which are one off scripts of functions run sequentially)
-    data_handler_main(full_exec=config['data_handler']['full_exec'])
+    data_handler_main(full_exec=config['data_handler']['full_exec'],
+                     start_date = config['data_handler']['start_date'],
+                     end_date = config['data_handler']['end_date'],
+                     prefix = config['data_handler']['prefix'])
 
 if __name__ == '__main__':
     main()

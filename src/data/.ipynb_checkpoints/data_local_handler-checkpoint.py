@@ -14,10 +14,15 @@ from src.data.data_eda import ticker_eda_profile
 from src.data.feature_local_talib import feature_talib_engineering
 from src.data.dataset_local_operator import dataset_operations, prod_dev_split
 
+# Import from AWS utils
+from src.misc.aws_utils import setup_aws_sagemaker_resources
+
 @log_function_call
-def data_handler_main(start_date:str = '2010-01-04',
-                      end_date:str = '2026-01-04',
-                      full_exec=False):
+def data_handler_main(prefix:str,
+    start_date:str = '2010-01-04',
+    end_date:str = '2026-01-04',
+    full_exec=False):
+    
     try:
 
         # Let's create the different tickets for NYMEX oil and COMEX gold
@@ -60,7 +65,33 @@ def data_handler_main(start_date:str = '2010-01-04',
                 dataset_operations(df, ft, "close")
 
         ## same stuff but in aws:
+
+        # Obtain the required sagemaker resources
+        #sess, region, bucket = setup_aws_sagemaker_resources()
+        
         ## raw data set store in an S3 Datalake.
+        '''
+        NOTE: We will be adding the following structure to the s3 bucket
+        in order to ensure proper athena queries when used, also TECHNICALLY 
+        the flow of MLOPs should be:
+        
+        [Raw data -> AWS s3 upload -> AWS athena queries -> feature engineering -> AWS feature Store]
+
+        Instead we will be doing this, since we want to lower costs from using AWS feature store service
+        [Raw data -> AWS S3 upload -> AWS Athena queries -> feature engineering -> AWS s3 upload -> AWS Athena queries]
+
+        The file structure in AWS S3 bucket is as follows
+        AAI-540-Group-8/
+        ├── dataset/
+        │   |── raw/
+        |   |     └── (raw .csv files)
+        |   |── prod/
+        |   |     └── (processed prod.csv files)
+        |   |── (processed.csv files)
+        ├── backtest/
+        │   └── (backtesting.csv files)
+        '''
+        
         ## Set up Athena tables to enable cataloging and querying of your data.
         ## Perform exploratory data analysis on your data in a Sagemaker notebook.
         ## Perform feature engineering on raw data and store it in a Feature Store.

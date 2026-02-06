@@ -116,10 +116,10 @@ def backtest_dataset_creation(df: DataFrame, ticker: str):
         backtest_path = Path().cwd() / 'files' / 'backtest' / 'Daily'
         backtest_path.mkdir(parents = True, exist_ok = True)
         ticker_path = backtest_path / f"{ticker}.csv"
-        if not ticker_path:
+        if not ticker_path.exists():
             df.ffill()
             df[df.select_dtypes(np.float64).columns] = df.select_dtypes(np.float64).round().astype(int)
-            df.to_csv(f'files/backtest/Daily/{ticker}.csv')  # backtest needs this specific format
+            df.to_csv(ticker_path)  # backtest needs this specific format
     except Exception as e:
         logger.error(e)
 
