@@ -151,3 +151,21 @@ def get_stocks_data_local(tickers: List[str]):
         return df_tickers
     except Exception as e:
         logger.error(e)
+
+@log_function_call
+def get_backtest_file_paths() -> List[str, str]:
+    try:
+        backtest_path = Path().cwd() / 'files' / 'backtest' 
+        backtest_daily_path = backtest_path / 'Daily'
+        return backtest_path, backtest_daily_path
+    except Exception as e:
+        logger.error(e)
+
+@log_function_call
+def get_dataset_file_paths() -> List[str, str]:
+    try:
+        dataset_path = Path().cwd() / 'files' / 'dataset' 
+        prod_path = dataset_path / 'prod'
+        return dataset_path, prod_path
+    except Exception as e:
+        logger.error(e)

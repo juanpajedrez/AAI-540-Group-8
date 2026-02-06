@@ -22,7 +22,10 @@ def main ():
     data_handler_main(full_exec=config['data_handler']['full_exec'],
                      start_date = config['data_handler']['start_date'],
                      end_date = config['data_handler']['end_date'],
-                     prefix = config['data_handler']['prefix'])
+                     prefix = config['data_handler']['prefix'],
+                     upload_backtest = config['data_handler']['upload_backtest'],
+                     upload_dataset = config['data_handler']['upload_dataset'],
+                     upload_production = config['data_handler']['upload_production'])
 
 if __name__ == '__main__':
     main()

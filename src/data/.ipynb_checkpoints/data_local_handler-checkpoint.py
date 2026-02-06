@@ -2,13 +2,14 @@ import yfinance as yf
 import pandas as pd
 from datetime import date, timedelta
 import os
+from pathlib import Path
 
 import logging
 
 logger = logging.getLogger('aws')
 
 # Import from src the get_stocks_data_yahoo
-from src.data.data_utils import get_stocks_data_local, get_zipline_stocks, setup_local_files_dirs
+from src.data.data_utils import get_stocks_data_local, get_zipline_stocks, setup_local_files_dirs, get_backtest_file_paths, get_dataset_file_paths
 from src.misc.logger_utils import log_function_call
 from src.data.data_eda import ticker_eda_profile
 from src.data.feature_local_talib import feature_talib_engineering
@@ -19,6 +20,9 @@ from src.misc.aws_utils import setup_aws_sagemaker_resources
 
 @log_function_call
 def data_handler_main(prefix:str,
+    upload_backtest: bool,
+    upload_dataset: bool,
+    upload_production:bool,
     start_date:str = '2010-01-04',
     end_date:str = '2026-01-04',
     full_exec=False):
@@ -64,12 +68,6 @@ def data_handler_main(prefix:str,
             if full_exec:
                 dataset_operations(df, ft, "close")
 
-        ## same stuff but in aws:
-
-        # Obtain the required sagemaker resources
-        #sess, region, bucket = setup_aws_sagemaker_resources()
-        
-        ## raw data set store in an S3 Datalake.
         '''
         NOTE: We will be adding the following structure to the s3 bucket
         in order to ensure proper athena queries when used, also TECHNICALLY 
@@ -89,8 +87,39 @@ def data_handler_main(prefix:str,
         |   |     └── (processed prod.csv files)
         |   |── (processed.csv files)
         ├── backtest/
-        │   └── (backtesting.csv files)
+        │   └── Daily/
+                  └── (backtesting.csv files)
         '''
+
+        ## same stuff but in aws:
+
+        # 1.1 Obtain the required Sagemaker resources
+        sess, region, bucket = setup_aws_sagemaker_resources()
+
+        # 1.2 Get the backtest and dataset paths
+        backtest_path, backtest_daily_path = get_backtest_file_paths()
+        dataset_path, prod_path = get_dataset_file_paths()
+        
+        # 1.3 Uploading backtesting datasets to S3
+        if upload_backtest:
+            # Get all files ending in .csv inside Daily
+            for csv_file in backtest_daily_path.glob("*.csv"):
+                sess.upload_data(str(csv_file), bucket=bucket,
+                                 key_prefix=f"{prefix}/backtest/Daily")
+
+        # 1.4 Uploading feature engineer dataset from feature talib_engineering
+        if upload_dataset:
+            # Get all files ending in .csv inside dataset
+            for csv_file in dataset_path.glob("*.csv"):
+                sess.upload_data(str(csv_file), bucket=bucket,
+                 key_prefix=f"{prefix}/dataset")
+
+        # 1.5 Uploading production datasets from feature talib_engineering
+        if upload_production:
+            # Get all files ending in .csv inside production
+            for csv_file in prod_path.glob("*.csv"):
+                sess.upload_data(str(csv_file), bucket = bucket,
+                                key_prefix=f"{prefix}/dataset/prod")
         
         ## Set up Athena tables to enable cataloging and querying of your data.
         ## Perform exploratory data analysis on your data in a Sagemaker notebook.

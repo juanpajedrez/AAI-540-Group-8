@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime
 import yfinance as yf
 
-from typing import List, Union, Dict
+from typing import Tuple, List, Union, Dict
 
 import logging
 from pathlib import Path
@@ -149,5 +149,23 @@ def get_stocks_data_local(tickers: List[str]):
         df_tickers = []
         [df_tickers.append(pd.read_csv(f"files/backtest/Daily/{ticker}.csv")) for ticker in tickers]
         return df_tickers
+    except Exception as e:
+        logger.error(e)
+
+@log_function_call
+def get_backtest_file_paths() -> Tuple[str, str]:
+    try:
+        backtest_path = Path().cwd() / 'files' / 'backtest' 
+        backtest_daily_path = backtest_path / 'Daily'
+        return backtest_path, backtest_daily_path
+    except Exception as e:
+        logger.error(e)
+
+@log_function_call
+def get_dataset_file_paths() -> Tuple[str, str]:
+    try:
+        dataset_path = Path().cwd() / 'files' / 'dataset' 
+        prod_path = dataset_path / 'prod'
+        return dataset_path, prod_path
     except Exception as e:
         logger.error(e)
