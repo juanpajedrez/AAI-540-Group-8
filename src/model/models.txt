@@ -1,0 +1,11 @@
+https://huggingface.co/Rogendo/forex-lstm-models
+
+https://github.com/shiyu-coder/Kronos
+
+https://huggingface.co/SatyamSinghal/financial-ttm
+
+https://huggingface.co/semsankken/xauusd_smc_trading_classifier
+
+https://huggingface.co/JonusNattapong/xauusd-trading-ai
+
+https://github.com/amuzetnoM/cthulu?tab=readme-ov-file

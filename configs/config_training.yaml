@@ -1,0 +1,53 @@
+data_handler:
+    full_exec: false
+    start_date: "2010-01-04"
+    end_date: "2026-02-05"
+    prefix: "AAI_540_group_8"
+    upload_backtest: false
+    upload_dataset: false
+    upload_production: false
+
+model_handler:
+    run_training: true
+    run_evaluation: true
+    tickers:
+        - "CL=F"
+        - "GC=F"
+    models:
+        - "lstm"
+        - "transformer"
+        - "bilstm_attention"
+
+    # Data loading
+    dataset_path: "files/dataset"
+    lookback: 20
+    batch_size: 32
+    num_features: 20
+
+    # Training
+    epochs: 200
+    learning_rate: 0.001
+    weight_decay: 0.00001
+    grad_clip_norm: 1.0
+    early_stopping_patience: 15
+    lr_scheduler_patience: 7
+    lr_scheduler_factor: 0.5
+    lr_min: 0.000001
+    device: "cpu"
+
+    # LSTM (inspired by Rogendo/forex-lstm-models)
+    lstm_hidden_size: 64
+    lstm_num_layers: 2
+    lstm_dropout: 0.2
+
+    # Transformer (inspired by SatyamSinghal/financial-ttm)
+    transformer_d_model: 64
+    transformer_nhead: 4
+    transformer_num_layers: 2
+    transformer_dim_ff: 128
+    transformer_dropout: 0.1
+
+    # BiLSTM + Attention (inspired by JonusNattapong/xauusd-trading-ai)
+    bilstm_hidden_size: 64
+    bilstm_num_layers: 2
+    bilstm_dropout: 0.2

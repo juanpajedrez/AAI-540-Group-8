@@ -18,3 +18,9 @@ sagemaker
 boto3
 
 # Importing modules for config
+pyyaml
+
+# Deep learning and model training
+torch
+joblib
+matplotlib
