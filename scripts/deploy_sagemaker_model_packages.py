@@ -57,6 +57,29 @@ MODEL_LABELS = {
     "bilstm_attention": "BiLSTM-Attention",
 }
 
+ARCHITECTURE_DESCRIPTIONS = {
+    "lstm": (
+        "Stacked LSTM (2 layers, hidden=64, dropout=0.2) -> Linear head. "
+        "Inspired by Rogendo/forex-lstm-models."
+    ),
+    "transformer": (
+        "Input projection -> Positional encoding -> 2-layer TransformerEncoder "
+        "(d=64, 4 heads, ff=128) -> Avg pool -> Linear. "
+        "Inspired by SatyamSinghal/financial-ttm."
+    ),
+    "bilstm_attention": (
+        "2-layer BiLSTM (hidden=64) -> Self-attention scoring -> "
+        "Weighted sum -> Linear. Inspired by JonusNattapong/xauusd-trading-ai."
+    ),
+}
+
+FEATURE_LIST = (
+    "high, low, open, volume, MA, EMA, KAMA, WMA, MidPrice, "
+    "BOP, CMO, MFI, ROC, WILLR, AD, OBV, NATR, ATR, TRANGE, TSF"
+)
+
+INFERENCE_SCRIPT = PROJECT_ROOT / "src" / "model" / "inference.py"
+
 
 def discover_role(iam_client, cli_role: str | None) -> str:
     """Resolve IAM role ARN: CLI override > IAM lookup > fallback."""
@@ -100,6 +123,13 @@ def create_model_tarball(ticker: str, model_name: str) -> io.BytesIO:
                 continue
             tar.add(str(fpath), arcname=fname)
             logger.info(f"  Added: {fname}")
+
+        # Bundle inference.py into code/ directory (required by PyTorch serving container)
+        if INFERENCE_SCRIPT.exists():
+            tar.add(str(INFERENCE_SCRIPT), arcname="code/inference.py")
+            logger.info("  Added: code/inference.py")
+        else:
+            logger.warning(f"Inference script not found: {INFERENCE_SCRIPT}")
 
     buf.seek(0)
     return buf
@@ -151,24 +181,69 @@ def register_model_package(sm_client, group_name: str, model_s3_uri: str,
 
     model_label = MODEL_LABELS.get(model_name, model_name)
     ticker_label = TICKER_LABELS.get(ticker, ticker)
+    arch_desc = ARCHITECTURE_DESCRIPTIONS.get(model_name, "")
+    config = metadata.get("config", {})
+
+    best_val = metadata.get("best_val_loss")
+    best_val_str = f"{best_val:.6f}" if isinstance(best_val, (int, float)) else "N/A"
 
     description = (
         f"{model_label} model for {ticker_label}. "
+        f"{arch_desc} "
         f"Epochs trained: {metadata.get('epochs_trained', 'N/A')}, "
-        f"Best val loss: {metadata.get('best_val_loss', 'N/A')}"
+        f"Best val loss: {best_val_str}. "
+        f"Intended use: ML momentum trading strategy with majority vote ensemble. "
+        f"Training data: {config.get('dataset_path', 'files/dataset')} "
+        f"(2010-01-04 to 2026-02-05)."
     )
 
-    # Build customer metadata (all values must be strings)
+    # Build customer metadata (all values must be strings, limit 50 keys)
     customer_metadata = {
         "model_architecture": model_name,
+        "architecture_description": arch_desc[:256],
         "ticker": ticker,
         "framework": "pytorch",
         "framework_version": "2.1.0",
+        "intended_use": "ML momentum trading with ensemble majority vote",
+        "strategy_weights": "70% model_vote + 15% EMA + 15% McClellan",
+        "training_data_range": "2010-01-04 to 2026-02-05",
+        "feature_list": FEATURE_LIST,
+        "num_features": str(config.get("num_features", 20)),
+        "lookback": str(config.get("lookback", 20)),
+        "batch_size": str(config.get("batch_size", 32)),
+        "learning_rate": str(config.get("learning_rate", 0.001)),
+        "weight_decay": str(config.get("weight_decay", 1e-5)),
+        "grad_clip_norm": str(config.get("grad_clip_norm", 1.0)),
+        "early_stopping_patience": str(config.get("early_stopping_patience", 15)),
+        "lr_scheduler_patience": str(config.get("lr_scheduler_patience", 7)),
+        "lr_scheduler_factor": str(config.get("lr_scheduler_factor", 0.5)),
+        "lr_min": str(config.get("lr_min", 1e-6)),
+        "max_epochs": str(config.get("epochs", 200)),
     }
     if metadata.get("epochs_trained"):
         customer_metadata["epochs_trained"] = str(metadata["epochs_trained"])
     if metadata.get("best_val_loss"):
         customer_metadata["best_val_loss"] = str(round(metadata["best_val_loss"], 6))
+    if metadata.get("final_train_loss"):
+        customer_metadata["final_train_loss"] = str(round(metadata["final_train_loss"], 6))
+    if metadata.get("final_val_loss"):
+        customer_metadata["final_val_loss"] = str(round(metadata["final_val_loss"], 6))
+
+    # Add architecture-specific hyperparams
+    if model_name == "lstm":
+        customer_metadata["lstm_hidden_size"] = str(config.get("lstm_hidden_size", 64))
+        customer_metadata["lstm_num_layers"] = str(config.get("lstm_num_layers", 2))
+        customer_metadata["lstm_dropout"] = str(config.get("lstm_dropout", 0.2))
+    elif model_name == "transformer":
+        customer_metadata["transformer_d_model"] = str(config.get("transformer_d_model", 64))
+        customer_metadata["transformer_nhead"] = str(config.get("transformer_nhead", 4))
+        customer_metadata["transformer_num_layers"] = str(config.get("transformer_num_layers", 2))
+        customer_metadata["transformer_dim_ff"] = str(config.get("transformer_dim_ff", 128))
+        customer_metadata["transformer_dropout"] = str(config.get("transformer_dropout", 0.1))
+    elif model_name == "bilstm_attention":
+        customer_metadata["bilstm_hidden_size"] = str(config.get("bilstm_hidden_size", 64))
+        customer_metadata["bilstm_num_layers"] = str(config.get("bilstm_num_layers", 2))
+        customer_metadata["bilstm_dropout"] = str(config.get("bilstm_dropout", 0.2))
 
     resp = sm_client.create_model_package(
         ModelPackageGroupName=group_name,
