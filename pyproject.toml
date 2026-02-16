@@ -2,7 +2,40 @@
 name = "yfinance-app"
 version = "0.0.1"
 requires-python = ">= 3.12"
+dependencies = [
+    # Data handling
+    "pandas",
+    "python-dotenv",
+    "yfinance",
+    "ydata-profiling",
+    "setuptools",
+    "TA-Lib",
+    "scikit-learn",
+    "zipline-reloaded",
 
-dynamic = ["dependencies"]
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+    # Jupyter
+    "jupyter",
+    "ipykernel",
+    "tqdm",
+
+    # AWS
+    "sagemaker",
+    "boto3",
+    "awscli",
+
+    # Config
+    "pyyaml",
+
+    # Deep learning and model training
+    "torch",
+    "joblib",
+    "matplotlib",
+]
+
+[dependency-groups]
+dev = [
+    "pylint",
+    "pytest",
+    "mypy",
+    "coverage",
+]

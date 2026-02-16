@@ -90,15 +90,16 @@ class TransformerModel(nn.Module):
         ff = int(config.get('transformer_dim_ff', 128))
         do = float(config.get('transformer_dropout', 0.1))
         lb = int(config.get('lookback', 20))
-        self.proj = nn.Linear(nf, dm)
-        self.pos = nn.Parameter(torch.randn(1, lb, dm) * 0.1)
+        # Attribute names must match the saved state_dict from training
+        self.input_projection = nn.Linear(nf, dm)
+        self.pos_encoding = nn.Parameter(torch.randn(1, lb, dm) * 0.1)
         layer = nn.TransformerEncoderLayer(dm, nh, ff, do, batch_first=True)
-        self.enc = nn.TransformerEncoder(layer, nl)
+        self.transformer_encoder = nn.TransformerEncoder(layer, nl)
         self.fc = nn.Linear(dm, 1)
 
     def forward(self, x):
-        x = self.proj(x) + self.pos
-        return self.fc(self.enc(x).mean(dim=1))
+        x = self.input_projection(x) + self.pos_encoding
+        return self.fc(self.transformer_encoder(x).mean(dim=1))
 
 
 class BiLSTMAttentionModel(nn.Module):
@@ -111,13 +112,14 @@ class BiLSTMAttentionModel(nn.Module):
         self.bilstm = nn.LSTM(nf, hs, nl, batch_first=True,
                               bidirectional=True,
                               dropout=do if nl > 1 else 0.0)
-        self.attn = nn.Linear(hs * 2, 1)
+        # Attribute name must match saved state_dict from training
+        self.attention_fc = nn.Linear(hs * 2, 1)
         self.dropout = nn.Dropout(do)
         self.fc = nn.Linear(hs * 2, 1)
 
     def forward(self, x):
         out, _ = self.bilstm(x)
-        w = torch.softmax(self.attn(out), dim=1)
+        w = torch.softmax(self.attention_fc(out), dim=1)
         ctx = (out * w).sum(dim=1)
         return self.fc(self.dropout(ctx))
 
