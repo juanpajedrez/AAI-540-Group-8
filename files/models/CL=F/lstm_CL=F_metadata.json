@@ -1,10 +1,10 @@
 {
   "model_name": "lstm",
   "ticker": "CL=F",
-  "epochs_trained": 19,
-  "best_val_loss": 0.0005946384747706664,
-  "final_train_loss": 0.0032668284617830066,
-  "final_val_loss": 0.00962168579765906,
+  "epochs_trained": 47,
+  "best_val_loss": 0.0004642124889263262,
+  "final_train_loss": 0.0020872482581762598,
+  "final_val_loss": 0.0005716979091327327,
   "config": {
     "run_training": true,
     "run_evaluation": true,

@@ -15,9 +15,11 @@ src/model/data_loader.py
 src/model/deployment.py
 src/model/evaluate_pipeline.py
 src/model/evaluation.py
+src/model/inference.py
 src/model/train_pipeline.py
 src/model/training.py
 src/trader/gold_algo.py
+src/trader/momentum_algo.py
 src/ui/app.py
 src/ui/backend_service.py
 src/yfinance_app.egg-info/PKG-INFO

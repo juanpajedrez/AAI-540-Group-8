@@ -2,9 +2,9 @@
   "model_name": "lstm",
   "ticker": "GC=F",
   "epochs_trained": 25,
-  "best_val_loss": 0.0006546210200516119,
-  "final_train_loss": 0.002778291002032347,
-  "final_val_loss": 0.0012698748517626275,
+  "best_val_loss": 0.0007318171477284826,
+  "final_train_loss": 0.0034285224898485465,
+  "final_val_loss": 0.006452902879876395,
   "config": {
     "run_training": true,
     "run_evaluation": true,
