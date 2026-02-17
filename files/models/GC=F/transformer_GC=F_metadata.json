@@ -1,10 +1,10 @@
 {
   "model_name": "transformer",
   "ticker": "GC=F",
-  "epochs_trained": 38,
-  "best_val_loss": 0.00265908295114059,
-  "final_train_loss": 0.0032874519942561165,
-  "final_val_loss": 0.019620238104835153,
+  "epochs_trained": 46,
+  "best_val_loss": 0.009125430229081152,
+  "final_train_loss": 0.0729611577722244,
+  "final_val_loss": 0.009657922004407737,
   "config": {
     "run_training": true,
     "run_evaluation": true,

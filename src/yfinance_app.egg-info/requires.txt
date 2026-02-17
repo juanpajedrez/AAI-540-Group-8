@@ -11,6 +11,7 @@ ipykernel
 tqdm
 sagemaker
 boto3
+awscli
 pyyaml
 torch
 joblib
