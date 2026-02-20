@@ -44,13 +44,16 @@ The teammate clones the repo, sets credentials, and runs:
 - Config-driven where possible (use `configs/config_training.yaml`)
 
 ### 3.3 AWS Constraints
-- **Budget**: AWS Learner Lab has a $50 limit -- be cost-conscious
-- **Instance types**: prefer `ml.m5.large` (CPU, cheapest) unless GPU is required
+- **Budget: ~$5 USD remaining** -- every AWS call costs money. Be extremely cost-conscious.
+- **Validation is mandatory**: code must be tested against the real AWS Learner Lab, not just written and hoped to work. But each validation run must be deliberate and minimal.
+- **Cost strategy**: write and dry-run locally first, validate on AWS only when confident, tear down immediately after validation
+- **Instance types**: `ml.m5.large` (CPU, ~$0.115/hr) -- never use larger unless absolutely required
 - **Region**: `us-east-1` only
 - **IAM Role**: `arn:aws:iam::806081623304:role/LabRole` (Learner Lab fixed role)
 - **Bucket**: `labs-usd-01`, prefix `AAI_540_group_8`
 - **Idempotency**: all deploy scripts must handle "already exists" gracefully (no crashes on re-run)
-- **Cleanup**: include teardown/cleanup functions or flags where AWS resources are created
+- **Cleanup**: include teardown/cleanup functions or flags where AWS resources are created. Always clean up endpoints, monitors, and any running resources after validation.
+- **No long-running resources**: endpoints, monitoring schedules, and pipelines must be created, validated, and torn down in the same script run
 
 ### 3.4 Compatibility
 - Python 3.10+ (SageMaker containers use 3.10)
