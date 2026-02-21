@@ -626,11 +626,22 @@ def main():
     # 2. Publish metrics to CloudWatch
     publish_metrics(report)
 
-    # 3. Save JSON report
+    # 3. Save JSON report (convert numpy types to native Python for serialization)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     report_path = OUTPUT_DIR / "monitoring_report.json"
+
+    class NumpyEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, (np.bool_,)):
+                return bool(obj)
+            if isinstance(obj, (np.integer,)):
+                return int(obj)
+            if isinstance(obj, (np.floating,)):
+                return float(obj)
+            return super().default(obj)
+
     with open(report_path, "w") as f:
-        json.dump(report, f, indent=2)
+        json.dump(report, f, indent=2, cls=NumpyEncoder)
     logger.info(f"Report saved to {report_path}")
 
     # 4. Print summary
