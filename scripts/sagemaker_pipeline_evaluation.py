@@ -141,6 +141,21 @@ class FuturesDataset(Dataset):
 # Evaluation
 # ============================================================================
 
+def extract_model_tarball(model_dir):
+    """Extract model.tar.gz if present (SageMaker Processing does NOT auto-extract)."""
+    import tarfile
+    tarball = model_dir / "model.tar.gz"
+    if tarball.exists():
+        logger.info(f"Extracting {tarball}...")
+        with tarfile.open(tarball, "r:gz") as tar:
+            tar.extractall(path=model_dir)
+        logger.info(f"Extracted model artifacts to {model_dir}")
+        # List extracted files
+        for f in sorted(model_dir.rglob("*")):
+            if f.is_file() and f.name != "model.tar.gz":
+                logger.info(f"  {f}")
+
+
 def find_model_file(model_dir, ticker, model_name):
     """Find the .pth model file in the model directory.
 
@@ -170,22 +185,13 @@ def find_model_file(model_dir, ticker, model_name):
 
 
 def load_test_data(test_dir, ticker, lookback=20):
-    """Load preprocessed test features and targets.
+    """Load UNscaled test features and targets from preprocessing output.
 
-    The preprocessing step saves:
-        {ticker}/  {ticker}y_test.csv (features), {ticker}x_test.csv (target)
-        {ticker}/  feature_scaler.pkl, target_scaler.pkl
+    The preprocessing step saves (flat, no ticker subdirectory):
+        {ticker}y_test.csv (features), {ticker}x_test.csv (target)
     """
-    ticker_dir = test_dir / ticker
-
-    # Try ticker subdirectory first, then flat
-    if ticker_dir.exists():
-        base = ticker_dir
-    else:
-        base = test_dir
-
-    features_path = base / f"{ticker}y_test.csv"
-    target_path = base / f"{ticker}x_test.csv"
+    features_path = test_dir / f"{ticker}y_test.csv"
+    target_path = test_dir / f"{ticker}x_test.csv"
 
     if not features_path.exists():
         raise FileNotFoundError(f"Test features not found: {features_path}")
@@ -205,6 +211,35 @@ def load_test_data(test_dir, ticker, lookback=20):
     return features, targets
 
 
+def load_scalers(model_dir, ticker, model_name):
+    """Load feature and target scalers from model artifacts.
+
+    sagemaker_training.py saves scalers alongside the model:
+        {ticker}/{model_name}_{ticker}_feature_scaler.pkl
+        {ticker}/{model_name}_{ticker}_target_scaler.pkl
+    """
+    candidates = [
+        (
+            model_dir / ticker / f"{model_name}_{ticker}_feature_scaler.pkl",
+            model_dir / ticker / f"{model_name}_{ticker}_target_scaler.pkl",
+        ),
+        (
+            model_dir / f"{model_name}_{ticker}_feature_scaler.pkl",
+            model_dir / f"{model_name}_{ticker}_target_scaler.pkl",
+        ),
+    ]
+
+    for feat_path, tgt_path in candidates:
+        if feat_path.exists() and tgt_path.exists():
+            logger.info(f"Loading scalers from: {feat_path.parent}")
+            return joblib.load(feat_path), joblib.load(tgt_path)
+
+    raise FileNotFoundError(
+        f"Scalers not found for {model_name}/{ticker} in {model_dir}. "
+        f"Files present: {list(model_dir.rglob('*.pkl'))}"
+    )
+
+
 def main():
     logger.info("=" * 60)
     logger.info("SageMaker Pipeline: Evaluation Step")
@@ -219,6 +254,9 @@ def main():
     logger.info(f"Lookback:   {lookback}")
     logger.info(f"Model dir:  {MODEL_DIR}")
     logger.info(f"Test dir:   {TEST_DIR}")
+
+    # Extract model.tar.gz (SageMaker Processing does NOT auto-extract)
+    extract_model_tarball(MODEL_DIR)
 
     # List input files for debugging
     for d, label in [(MODEL_DIR, "Model"), (TEST_DIR, "Test")]:
@@ -258,9 +296,14 @@ def main():
     model.eval()
     logger.info("Model loaded successfully.")
 
-    # 2. Load test data (already scaled by preprocessing step)
+    # 2. Load test data (UNscaled from preprocessing) and scale using training scalers
     features, targets = load_test_data(TEST_DIR, ticker, lookback)
     logger.info(f"Test data: {features.shape[0]} samples, {features.shape[1]} features")
+
+    scaler_features, scaler_target = load_scalers(MODEL_DIR, ticker, model_name)
+    features = scaler_features.transform(features)
+    targets = scaler_target.transform(targets.reshape(-1, 1)).flatten()
+    logger.info("Scaled test data using training scalers.")
 
     # 3. Create data loader
     dataset = FuturesDataset(features, targets, lookback)

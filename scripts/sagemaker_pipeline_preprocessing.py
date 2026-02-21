@@ -61,9 +61,7 @@ install_dependencies()
 # --- Now safe to import ML / TA-Lib libs ---
 import numpy as np
 import pandas as pd
-import joblib
 import talib
-from sklearn.preprocessing import MinMaxScaler
 
 
 # ============================================================================
@@ -266,62 +264,35 @@ def main():
     # Load data (handles both pre-split and raw formats)
     data = load_raw_data(ticker, INPUT_DIR)
 
-    # Scale features and target (fit on train only)
-    scaler_features = MinMaxScaler()
-    scaler_target = MinMaxScaler()
-
     train_feat, train_tgt = data["train"]
     val_feat, val_tgt = data["val"]
     test_feat, test_tgt = data["test"]
 
     logger.info(f"Data shapes - train: {train_feat.shape}, val: {val_feat.shape}, test: {test_feat.shape}")
 
-    # Fit scalers on training data
-    train_feat_scaled = scaler_features.fit_transform(train_feat.values)
-    train_tgt_scaled = scaler_target.fit_transform(
-        train_tgt.values.reshape(-1, 1)
-    ).flatten()
+    # NOTE: We do NOT scale here. sagemaker_training.py fits its own
+    # MinMaxScaler so the scaler lives alongside the model artifacts.
+    # Scaling here would cause double-scaling.
 
-    # Transform val and test
-    val_feat_scaled = scaler_features.transform(val_feat.values)
-    val_tgt_scaled = scaler_target.transform(
-        val_tgt.values.reshape(-1, 1)
-    ).flatten()
+    # Save UNscaled CSVs directly to OUTPUT_DIR (no ticker subdirectory).
+    # sagemaker_training.py expects {ticker}y_dev.csv at the channel root.
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    test_feat_scaled = scaler_features.transform(test_feat.values)
-    test_tgt_scaled = scaler_target.transform(
-        test_tgt.values.reshape(-1, 1)
-    ).flatten()
+    # Save features (using the INVERTED naming convention: y = features, x = target)
+    train_feat.to_csv(OUTPUT_DIR / f"{ticker}y_dev.csv", index=False)
+    val_feat.to_csv(OUTPUT_DIR / f"{ticker}y_val.csv", index=False)
+    test_feat.to_csv(OUTPUT_DIR / f"{ticker}y_test.csv", index=False)
 
-    # Save processed CSVs to output directory
-    ticker_output = OUTPUT_DIR / ticker
-    ticker_output.mkdir(parents=True, exist_ok=True)
-
-    # Save scaled features (using the INVERTED naming convention: y = features, x = target)
-    pd.DataFrame(train_feat_scaled, columns=FEATURE_COLUMNS).to_csv(
-        ticker_output / f"{ticker}y_dev.csv", index=False
+    # Save targets
+    pd.DataFrame({"close": train_tgt.values}).to_csv(
+        OUTPUT_DIR / f"{ticker}x_dev.csv", index=False
     )
-    pd.DataFrame(val_feat_scaled, columns=FEATURE_COLUMNS).to_csv(
-        ticker_output / f"{ticker}y_val.csv", index=False
+    pd.DataFrame({"close": val_tgt.values}).to_csv(
+        OUTPUT_DIR / f"{ticker}x_val.csv", index=False
     )
-    pd.DataFrame(test_feat_scaled, columns=FEATURE_COLUMNS).to_csv(
-        ticker_output / f"{ticker}y_test.csv", index=False
+    pd.DataFrame({"close": test_tgt.values}).to_csv(
+        OUTPUT_DIR / f"{ticker}x_test.csv", index=False
     )
-
-    # Save scaled targets
-    pd.DataFrame({"close": train_tgt_scaled}).to_csv(
-        ticker_output / f"{ticker}x_dev.csv", index=False
-    )
-    pd.DataFrame({"close": val_tgt_scaled}).to_csv(
-        ticker_output / f"{ticker}x_val.csv", index=False
-    )
-    pd.DataFrame({"close": test_tgt_scaled}).to_csv(
-        ticker_output / f"{ticker}x_test.csv", index=False
-    )
-
-    # Save scalers for later use in evaluation and inference
-    joblib.dump(scaler_features, ticker_output / "feature_scaler.pkl")
-    joblib.dump(scaler_target, ticker_output / "target_scaler.pkl")
 
     # Save preprocessing metadata
     metadata = {
@@ -333,7 +304,7 @@ def main():
         "test_samples": len(test_feat),
         "scaler_type": "MinMaxScaler",
     }
-    with open(ticker_output / "preprocessing_metadata.json", "w") as f:
+    with open(OUTPUT_DIR / "preprocessing_metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
     logger.info("=" * 60)
@@ -343,7 +314,7 @@ def main():
     logger.info(f"  Val samples:   {len(val_feat)}")
     logger.info(f"  Test samples:  {len(test_feat)}")
     logger.info(f"  Features:      {len(FEATURE_COLUMNS)}")
-    logger.info(f"  Output dir:    {ticker_output}")
+    logger.info(f"  Output dir:    {OUTPUT_DIR}")
     logger.info("=" * 60)
 
 
