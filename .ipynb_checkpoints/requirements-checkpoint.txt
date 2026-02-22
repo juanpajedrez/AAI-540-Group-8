@@ -1,0 +1,18 @@
+# Importing latest modules for final project
+pandas
+python-dotenv
+yfinance
+ydata-profiling
+setuptools
+TA-Lib
+scikit-learn
+zipline-reloaded
+
+# Importing modules for jupyter kernel usage
+jupyter
+ipykernel
+tqdm
+
+# Importing latest aws modules for sagemaker
+sagemaker
+boto3

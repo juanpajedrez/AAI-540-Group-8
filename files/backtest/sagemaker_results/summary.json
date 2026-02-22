@@ -1,0 +1,12 @@
+{
+  "start_date": "2019-09-03",
+  "end_date": "2026-02-05",
+  "trading_days": 1616,
+  "initial_capital": 10000.0,
+  "final_value": 10412.08,
+  "total_return_pct": 4.12,
+  "annualized_return_pct": 0.63,
+  "sharpe_ratio": 0.1758,
+  "max_drawdown_pct": -60.35,
+  "total_transactions": 19
+}

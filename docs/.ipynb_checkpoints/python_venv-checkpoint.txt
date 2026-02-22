@@ -1,0 +1,15 @@
+# To create python venv
+python -m venv ~/venvs/sm_ml
+source ~/venvs/sm_ml/bin/activate
+
+# Pip install requirements.txt after activating
+pip install --upgrade pip
+pip install -r requirements-dev.txt
+pip install -r requirements.txt
+
+# To create ipykernel to select
+python -m ipykernel install \
+  --user \
+  --name sm_ml \
+  --display-name "Python (sm_ml)"
+NOTE: Close the jupyter notebook instance and open it again, it will reload and have the kernel ready to use for .ipynb files.

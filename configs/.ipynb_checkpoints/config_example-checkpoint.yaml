@@ -1,0 +1,9 @@
+# Example for config.yaml
+data_handler:
+    full_exec: true
+    start_date: "2010-01-04"
+    end_date: "2026-02-05"
+    prefix: "AAI_540_group_8"
+    upload_backtest: False
+    upload_dataset: False
+    upload_production: False
