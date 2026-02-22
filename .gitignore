@@ -1,2 +1,13 @@
 # Dont commit the logs
 logs/
+
+# Credentials and secrets
+credentials.txt
+.env
+
+# Virtual environment
+.venv/
+
+# Python bytecode
+__pycache__/
+*.pyc
