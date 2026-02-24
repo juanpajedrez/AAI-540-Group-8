@@ -368,6 +368,9 @@ If endpoints were already deleted or never created, the cleanup cell will print 
   </tr>
 </table>
 
+## AI Disclosure
+Portions of this codebase were developed with assistance from Claude by Anthropic.
+
 ## License
 
 MIT License
